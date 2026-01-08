@@ -1,50 +1,35 @@
 resource "aws_key_pair" "deployer" {
   key_name   = "terra-automate-key"
-  public_key = file("/Users/shubham/Documents/work/TrainWithShubham/terra-practice/terra-key.pub")
+  public_key = file("/Users/saurabh/Wanderlust-Mega-Project/terraform/terra-key.pub")
 }
 
 resource "aws_default_vpc" "default" {
 
 }
 
-resource "aws_security_group" "allow_user_to_connect" {
-  name        = "allow TLS"
-  description = "Allow user to connect"
-  vpc_id      = aws_default_vpc.default.id
-  ingress {
-    description = "port 22 allow"
-    from_port   = 22
-    to_port     = 22
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
+resource "aws_security_group" "project" {
+    name = "project"
+    description =  "Ingress-rule"  
 
-  egress {
-    description = " allow all outgoing traffic "
+    tags = {
+      name = "Jenkins-SG"
+    }
+
+    dynamic "ingress" {
+        for_each = var.sg_ports
+        content {
+          from_port = ingress.value.from
+          to_port = ingress.value.to
+          protocol = "tcp"
+          cidr_blocks = ["0.0.0.0/0"]
+        }
+    }
+
+    egress {
     from_port   = 0
     to_port     = 0
     protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  ingress {
-    description = "port 80 allow"
-    from_port   = 80
-    to_port     = 80
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  ingress {
-    description = "port 443 allow"
-    from_port   = 443
-    to_port     = 443
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  tags = {
-    Name = "mysecurity"
   }
 }
 
@@ -57,7 +42,7 @@ resource "aws_instance" "testinstance" {
     Name = "Automate"
   }
   root_block_device {
-    volume_size = 30 
+    volume_size = 29 
     volume_type = "gp3"
   }
 }
